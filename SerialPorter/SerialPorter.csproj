@@ -53,7 +53,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Interactions\CreateConnectionInteraction.cs" />
     <Compile Include="DTOs\SettingValueRange.cs" />
+    <Compile Include="Interactions\SendTextInteraction.cs" />
+    <Compile Include="Interactions\SendFileInteraction.cs" />
     <Compile Include="UiController.cs" />
     <Compile Include="ViewModels\SerialPorterMainWindowViewModel.cs" />
     <Compile Include="ViewModels\TextInputDialogViewModel.cs" />

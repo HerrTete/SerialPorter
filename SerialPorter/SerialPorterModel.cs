@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.IO.Ports;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 using SerialPorter.DTOs;
@@ -139,6 +141,34 @@ namespace SerialPorter
             {
                 TitleChanged();
             }
+        }
+
+        public void SaveLog()
+        {
+            if (Messages != null)
+            {
+                var assemblyPath = Assembly.GetExecutingAssembly().Location;
+                var assemblyFolder = Directory.GetParent(assemblyPath).FullName;
+                var logFolder = Path.Combine(assemblyFolder, "Log");
+                if (!Directory.Exists(logFolder))
+                {
+                    Directory.CreateDirectory(logFolder);
+                }
+                var logFilename = string.Format("{0}_[{1}].log", DateTime.Now.ToString("s").Replace(':', '-'), PortName);
+                var logFilePath = Path.Combine(logFolder, logFilename);
+
+                File.WriteAllLines(logFilePath, Messages);
+            }
+        }
+
+        public IEnumerable<string> GetMessages()
+        {
+            return Messages;
+        }
+
+        public string GetTitle()
+        {
+            return TitleStatus;
         }
     }
 }

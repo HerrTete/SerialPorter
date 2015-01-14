@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.IO.Ports;
-using System.Reflection;
 using System.Windows.Threading;
-
-using Microsoft.Win32;
 
 using SerialPorter.Dialogs;
 using SerialPorter.DTOs;
+using SerialPorter.Interactions;
 using SerialPorter.ViewModels;
 using SerialPorter.WpfTools;
 
@@ -24,15 +20,30 @@ namespace SerialPorter
         private TextInputDialogViewModel textInputDialogViewModel = null;
         private ConnectionSettingDialogViewModel connectionSettingDialogViewModel = null;
 
-        private SerialPorterModel model = null;
-        
         private Dispatcher initialDispatcher = null;
+
+        private CreateConnectionInteraction createConnection_Interaction = null;
+        private SendTextInteraction sendText_Interaction = null;
+        private SendFileInteraction sendFile_Interaction = null;
+        
+        public Action<string> SendText { get; set; }
+        public Action<SerialPortSettings> OnCreateClicked { get; set; }
+        
+        public Action OnCloseClicked { get; set; }
+        public Action OnOpenClicked { get; set; }
+        public Action OnSaveLogClicked { get; set; }
+        public Action OnClearLogClicked { get; set; }
+
+        public Func<SettingValueRange> GetSettingValueRanges { get; set; }
+
+        public Func<List<string>> GetMessages { get; set; }
+        public Func<string> GetTitle { get; set; }
 
         private void Run()
         {
             initialDispatcher = Dispatcher.CurrentDispatcher;
 
-            var settingValueRange = model.GetSettingValueRanges();
+            var settingValueRange = GetSettingValueRanges();
 
             connectionSettingDialogViewModel.Ports = settingValueRange.Ports;
             connectionSettingDialogViewModel.BaudRates = settingValueRange.BaudRates;
@@ -46,17 +57,14 @@ namespace SerialPorter
 
         private void Bind()
         {
-            model.MessagesChanged += RefreshMessages;
-            model.TitleChanged += RefreshTitle;
-
-            serialPorterMainWindowViewModel.OpenConnectionCommand = new BaseCommand(model.OpenConnection);
-            serialPorterMainWindowViewModel.CloseConnectionCommand = new BaseCommand(model.CloseConnection);
-            serialPorterMainWindowViewModel.ClearLogCommand = new BaseCommand(model.ClearLog);
             serialPorterMainWindowViewModel.Title = "SerialPorter";
-            serialPorterMainWindowViewModel.SaveLogCommand = new BaseCommand(SaveLog);
-            serialPorterMainWindowViewModel.CreateConnectionCommand = new BaseCommand(() => model.CreateConnection(GetSettings()));
-            serialPorterMainWindowViewModel.SendTextCommand = new BaseCommand(() => model.SendText(GetText()));
-            serialPorterMainWindowViewModel.SendFileCommand = new BaseCommand(() => model.SendText(GetFile()));
+            serialPorterMainWindowViewModel.OpenConnectionCommand = new BaseCommand(OnOpenClicked);
+            serialPorterMainWindowViewModel.CloseConnectionCommand = new BaseCommand(OnCloseClicked);
+            serialPorterMainWindowViewModel.ClearLogCommand = new BaseCommand(OnClearLogClicked);
+            serialPorterMainWindowViewModel.SaveLogCommand = new BaseCommand(OnSaveLogClicked);
+            serialPorterMainWindowViewModel.CreateConnectionCommand = new BaseCommand(() => createConnection_Interaction.CreateConnection(OnCreateClicked));
+            serialPorterMainWindowViewModel.SendTextCommand = new BaseCommand(() => sendText_Interaction.SendText(SendText));
+            serialPorterMainWindowViewModel.SendFileCommand = new BaseCommand(()=> sendFile_Interaction.SendFile(SendText));
 
             textInputDialogViewModel.OkCommand = new BaseCommand(textInputDialog.Hide);
             textInputDialogViewModel.CancelCommand = new BaseCommand(
@@ -82,8 +90,6 @@ namespace SerialPorter
 
         private void Build()
         {
-            model = new SerialPorterModel();
-
             serialPorterMainWindow = new SerialPorterMainWindow();
             textInputDialog = new TextInputDialog();
             connectionSettingDialog = new ConnectionSettingDialog();
@@ -91,6 +97,10 @@ namespace SerialPorter
             serialPorterMainWindowViewModel = new SerialPorterMainWindowViewModel();
             textInputDialogViewModel = new TextInputDialogViewModel();
             connectionSettingDialogViewModel = new ConnectionSettingDialogViewModel();
+
+            createConnection_Interaction = new CreateConnectionInteraction(connectionSettingDialog, connectionSettingDialogViewModel);
+            sendText_Interaction = new SendTextInteraction(textInputDialog, textInputDialogViewModel);
+            sendFile_Interaction = new SendFileInteraction();
         }
 
         public void Start()
@@ -102,7 +112,7 @@ namespace SerialPorter
             Run();
         }
 
-        private void RefreshMessages()
+        public void RefreshMessages()
         {
             if (!initialDispatcher.CheckAccess())
             {
@@ -110,112 +120,18 @@ namespace SerialPorter
             }
             else
             {
-                serialPorterMainWindowViewModel.Messages = new List<string>(model.Messages);
+                serialPorterMainWindowViewModel.Messages = new List<string>(GetMessages());
                 serialPorterMainWindowViewModel.OnPropertyChanged("Messages");
             }
         }
 
-        private void RefreshTitle()
+        public void RefreshTitle()
         {
-            if (model.TitleStatus != null)
+            if (GetTitle() != null)
             {
-                serialPorterMainWindowViewModel.Title = model.TitleStatus;
+                serialPorterMainWindowViewModel.Title = GetTitle();
                 serialPorterMainWindowViewModel.OnPropertyChanged("Title");
             }
-        }
-
-        private string GetText()
-        {
-            textInputDialogViewModel.QuestionText = "Please enter some text.";
-            textInputDialogViewModel.InputText = null;
-
-            textInputDialogViewModel.OnPropertyChanged("QuestionText");
-            textInputDialogViewModel.OnPropertyChanged("InputText");
-
-            textInputDialog.ShowDialog();
-
-            return textInputDialogViewModel.InputText;
-        }
-
-        private string GetFile()
-        {
-            var fileDialog = new OpenFileDialog();
-
-            var dialogResult = fileDialog.ShowDialog();
-            if (dialogResult == true)
-            {
-                return File.ReadAllText(fileDialog.FileName);
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        private void SaveLog()
-        {
-            if (model.Messages != null)
-            {
-                var assemblyPath = Assembly.GetExecutingAssembly().Location;
-                var assemblyFolder = Directory.GetParent(assemblyPath).FullName;
-                var logFolder = Path.Combine(assemblyFolder, "Log");
-                if (!Directory.Exists(logFolder))
-                {
-                    Directory.CreateDirectory(logFolder);
-                }
-                var logFilename = string.Format("{0}_[{1}].log", DateTime.Now.ToString("s").Replace(':', '-'), model.PortName);
-                var logFilePath = Path.Combine(logFolder, logFilename);
-
-                File.WriteAllLines(logFilePath, model.Messages);
-            }
-        }
-
-        private SerialPortSettings GetSettings()
-        {
-            LoadSettings();
-            connectionSettingDialog.ShowDialog();
-
-            if (connectionSettingDialogViewModel.Port == null)
-            {
-                return null;
-            }
-            else
-            {
-                return new SerialPortSettings
-                {
-                    Port = connectionSettingDialogViewModel.Port,
-                    Baudrate = connectionSettingDialogViewModel.BaudRate,
-                    Parity = (Parity)Enum.Parse(typeof(Parity), connectionSettingDialogViewModel.Parity),
-                    Databit = connectionSettingDialogViewModel.Databit,
-                    Stopbit = (StopBits)Enum.Parse(typeof(StopBits), connectionSettingDialogViewModel.Stopbit)
-                };
-            }
-        }
-
-        private void LoadSettings(SerialPortSettings settings = null)
-        {
-            if (settings != null)
-            {
-                connectionSettingDialogViewModel.Port = settings.Port;
-                connectionSettingDialogViewModel.BaudRate = settings.Baudrate;
-                connectionSettingDialogViewModel.Parity = settings.Parity.ToString();
-                connectionSettingDialogViewModel.Databit = settings.Databit;
-                connectionSettingDialogViewModel.Stopbit = settings.Stopbit.ToString();
-            }
-            else
-            {
-                connectionSettingDialogViewModel.Port = connectionSettingDialogViewModel.Ports[0];
-                connectionSettingDialogViewModel.BaudRate = connectionSettingDialogViewModel.BaudRates[0];
-                connectionSettingDialogViewModel.Parity = connectionSettingDialogViewModel.Parities[0];
-                connectionSettingDialogViewModel.Databit = connectionSettingDialogViewModel.Databits[0];
-                connectionSettingDialogViewModel.Stopbit = connectionSettingDialogViewModel.Stopbits[1];
-            }
-
-            connectionSettingDialogViewModel.OnPropertyChanged("Port");
-            connectionSettingDialogViewModel.OnPropertyChanged("BaudRate");
-            connectionSettingDialogViewModel.OnPropertyChanged("Parity");
-            connectionSettingDialogViewModel.OnPropertyChanged("Databit");
-            connectionSettingDialogViewModel.OnPropertyChanged("Stopbit");
         }
     }
 }
