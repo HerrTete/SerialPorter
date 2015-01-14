@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
 using System.Text;
-using System.Windows.Controls;
 
 using SerialPorter.DTOs;
 
@@ -13,7 +12,7 @@ namespace SerialPorter
     {
         private SerialPort _serialPort = null;
 
-        public event Action<List<string>> MessagesChanged;
+        public event Action MessagesChanged;
         public event Action TitleChanged;
 
         public string TitleStatus { get; set; }
@@ -80,37 +79,6 @@ namespace SerialPorter
             }
         }
 
-        private void SerialPortDataReceived(object sender, SerialDataReceivedEventArgs e)
-        {
-            var port = sender as SerialPort;
-            var data = port.ReadExisting();
-
-            var newMessageList = new List<string>();
-            if (Messages != null)
-            {
-                newMessageList.AddRange(Messages);
-            }
-            newMessageList.AddRange(data.Split('\n'));
-            Messages = newMessageList;
-            RaiseMessagesChanged();
-        }
-
-        private void RaiseMessagesChanged()
-        {
-            if (MessagesChanged != null)
-            {
-                MessagesChanged(Messages);
-            }
-        }
-
-        private void RaiseTitleChanged()
-        {
-            if (TitleChanged != null)
-            {
-                TitleChanged();
-            }
-        }
-
         public void ClearLog()
         {
             if (Messages != null)
@@ -141,14 +109,36 @@ namespace SerialPorter
                 Stopbits = stopBits.ToList()
             };
         }
-    }
 
-    public class SettingValueRange
-    {
-        public List<string> Ports { get; set; }
-        public List<int> BaudRates { get; set; }
-        public List<string> Parities { get; set; }
-        public List<int> Databits { get; set; }
-        public List<string> Stopbits { get; set; }
+        private void SerialPortDataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            var port = sender as SerialPort;
+            var data = port.ReadExisting();
+
+            var newMessageList = new List<string>();
+            if (Messages != null)
+            {
+                newMessageList.AddRange(Messages);
+            }
+            newMessageList.AddRange(data.Split('\n'));
+            Messages = newMessageList;
+            RaiseMessagesChanged();
+        }
+
+        private void RaiseMessagesChanged()
+        {
+            if (MessagesChanged != null)
+            {
+                MessagesChanged();
+            }
+        }
+
+        private void RaiseTitleChanged()
+        {
+            if (TitleChanged != null)
+            {
+                TitleChanged();
+            }
+        }
     }
 }

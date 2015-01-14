@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 using SerialPorter.WpfTools;
 
-namespace SerialPorter.ViewModel
+namespace SerialPorter.ViewModels
 {
     public class SerialPorterMainWindowViewModel : BaseViewModel
     {

@@ -9,7 +9,7 @@ using Microsoft.Win32;
 
 using SerialPorter.Dialogs;
 using SerialPorter.DTOs;
-using SerialPorter.ViewModel;
+using SerialPorter.ViewModels;
 using SerialPorter.WpfTools;
 
 namespace SerialPorter
@@ -28,22 +28,27 @@ namespace SerialPorter
         
         private Dispatcher initialDispatcher = null;
 
-        public UiController()
+        private void Run()
         {
             initialDispatcher = Dispatcher.CurrentDispatcher;
-            
-            model = new SerialPorterModel();
-            model.MessagesChanged += DisplayMessages;
+
+            var settingValueRange = model.GetSettingValueRanges();
+
+            connectionSettingDialogViewModel.Ports = settingValueRange.Ports;
+            connectionSettingDialogViewModel.BaudRates = settingValueRange.BaudRates;
+            connectionSettingDialogViewModel.Parities = settingValueRange.Parities;
+            connectionSettingDialogViewModel.Databits = settingValueRange.Databits;
+            connectionSettingDialogViewModel.Stopbits = settingValueRange.Stopbits;
+
+            serialPorterMainWindow.ShowDialog();
+            Environment.Exit(0);
+        }
+
+        private void Bind()
+        {
+            model.MessagesChanged += RefreshMessages;
             model.TitleChanged += RefreshTitle;
 
-            serialPorterMainWindow = new SerialPorterMainWindow();
-            textInputDialog = new TextInputDialog();
-            connectionSettingDialog = new ConnectionSettingDialog();
-
-            serialPorterMainWindowViewModel = new SerialPorterMainWindowViewModel();
-            textInputDialogViewModel = new TextInputDialogViewModel();
-            connectionSettingDialogViewModel = new ConnectionSettingDialogViewModel();
-            
             serialPorterMainWindowViewModel.OpenConnectionCommand = new BaseCommand(model.OpenConnection);
             serialPorterMainWindowViewModel.CloseConnectionCommand = new BaseCommand(model.CloseConnection);
             serialPorterMainWindowViewModel.ClearLogCommand = new BaseCommand(model.ClearLog);
@@ -69,36 +74,43 @@ namespace SerialPorter
                     connectionSettingDialogViewModel.Port = null;
                     connectionSettingDialog.Hide();
                 });
-            
+
             serialPorterMainWindow.DataContext = serialPorterMainWindowViewModel;
             textInputDialog.DataContext = textInputDialogViewModel;
             connectionSettingDialog.DataContext = connectionSettingDialogViewModel;
         }
 
-        public void Start()
+        private void Build()
         {
-            var settingValueRange = model.GetSettingValueRanges();
+            model = new SerialPorterModel();
 
-            connectionSettingDialogViewModel.Ports = settingValueRange.Ports;
-            connectionSettingDialogViewModel.BaudRates = settingValueRange.BaudRates;
-            connectionSettingDialogViewModel.Parities = settingValueRange.Parities;
-            connectionSettingDialogViewModel.Databits = settingValueRange.Databits;
-            connectionSettingDialogViewModel.Stopbits = settingValueRange.Stopbits;
+            serialPorterMainWindow = new SerialPorterMainWindow();
+            textInputDialog = new TextInputDialog();
+            connectionSettingDialog = new ConnectionSettingDialog();
 
-            serialPorterMainWindow.ShowDialog();
-            Environment.Exit(0);
+            serialPorterMainWindowViewModel = new SerialPorterMainWindowViewModel();
+            textInputDialogViewModel = new TextInputDialogViewModel();
+            connectionSettingDialogViewModel = new ConnectionSettingDialogViewModel();
         }
 
-        private void DisplayMessages(List<string> messages)
+        public void Start()
+        {
+            Build();
+
+            Bind();
+
+            Run();
+        }
+
+        private void RefreshMessages()
         {
             if (!initialDispatcher.CheckAccess())
             {
-                initialDispatcher.Invoke(
-                    () => DisplayMessages(messages));
+                initialDispatcher.Invoke(RefreshMessages);
             }
             else
             {
-                serialPorterMainWindowViewModel.Messages = model.Messages;
+                serialPorterMainWindowViewModel.Messages = new List<string>(model.Messages);
                 serialPorterMainWindowViewModel.OnPropertyChanged("Messages");
             }
         }
@@ -158,9 +170,7 @@ namespace SerialPorter
             }
         }
 
-
-
-        public SerialPortSettings GetSettings()
+        private SerialPortSettings GetSettings()
         {
             LoadSettings();
             connectionSettingDialog.ShowDialog();
@@ -182,7 +192,7 @@ namespace SerialPorter
             }
         }
 
-        public void LoadSettings(SerialPortSettings settings = null)
+        private void LoadSettings(SerialPortSettings settings = null)
         {
             if (settings != null)
             {

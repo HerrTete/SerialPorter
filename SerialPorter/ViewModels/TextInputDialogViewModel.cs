@@ -1,6 +1,6 @@
 using SerialPorter.WpfTools;
 
-namespace SerialPorter.Dialogs
+namespace SerialPorter.ViewModels
 {
     public class TextInputDialogViewModel : BaseViewModel
     {
