@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Windows;
@@ -10,74 +9,65 @@ using Microsoft.Win32;
 
 using SerialPorter.Dialogs;
 using SerialPorter.DTOs;
+using SerialPorter.ViewModel;
+using SerialPorter.WpfTools;
 
 namespace SerialPorter
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : Window
+    public partial class SerialPorterMainWindow : Window
     {
         private SerialPorterModel _model = null;
         private Dispatcher _initialDispatcher = null;
 
-        public MainWindow()
+        public SerialPorterMainWindow()
         {
             _initialDispatcher = Dispatcher.CurrentDispatcher;
             InitializeComponent();
-            DataContext = this;
+            DataContext = new SerialPorterMainWindowViewModel();
+
             _model = new SerialPorterModel();
             _model.MessagesChanged += DisplayMessages;
+            _model.TitleChanged += RefreshTitle;
+
+
+            ViewModel.Title = "SerialPorter";
+            ViewModel.ClearLogCommand = new BaseCommand(_model.ClearLog);
+            ViewModel.SaveLogCommand = new BaseCommand(SaveLog);
+            ViewModel.OpenConnectionCommand = new BaseCommand(_model.OpenConnection);
+            ViewModel.CloseConnectionCommand = new BaseCommand(_model.CloseConnection);
+            ViewModel.CreateConnectionCommand = new BaseCommand(() => _model.CreateConnection(GetSettings));
+            ViewModel.SendTextCommand = new BaseCommand(() => _model.SendText(GetText()));
+            ViewModel.SendFileCommand = new BaseCommand(() => _model.SendText(GetFile()));
         }
 
-        private void DisplayMessages(List<string> data)
+        public SerialPorterMainWindowViewModel ViewModel
+        {
+            get
+            {
+                return DataContext as SerialPorterMainWindowViewModel;
+            }
+        }
+
+        private void DisplayMessages(List<string> messages)
         {
             if (!_initialDispatcher.CheckAccess())
             {
                 _initialDispatcher.Invoke(
-                    () => DisplayMessages(data));
+                    () => DisplayMessages(messages));
             }
             else
             {
-                MessageListView.ItemsSource = null;
-                
-                MessageListView.ItemsSource = _model.Messages;
+                ViewModel.Messages = _model.Messages;
+                ViewModel.OnPropertyChanged("Messages");
             }
-        }
-
-        private void Open_connection_Clicked(object sender, RoutedEventArgs e)
-        {
-            _model.OpenConnection();
-            RefreshTitle();
-        }
-
-        private void Close_connection_Clicked(object sender, RoutedEventArgs e)
-        {
-            _model.CloseConnection();
-            RefreshTitle();
-        }
-
-        private void Send_Text_Clicked(object sender, RoutedEventArgs e)
-        {
-            _model.SendText(GetText());
-        }
-
-        private void Send_File_Clicked(object sender, RoutedEventArgs e)
-        {
-            _model.SendText(GetFile());
-        }
-
-        private void Create_connection_Clicked(object sender, RoutedEventArgs e)
-        {
-            _model.CreateConnection(GetSettings);
-            RefreshTitle();
         }
 
         private void RefreshTitle()
         {
             if (_model.TitleStatus != null)
             {
-                Title = _model.TitleStatus;
+                ViewModel.Title = _model.TitleStatus;
+                ViewModel.OnPropertyChanged("Title");
             }
         }
 
@@ -114,12 +104,7 @@ namespace SerialPorter
             return settings;
         }
 
-        private void Clear_Log_Clicked(object sender, RoutedEventArgs e)
-        {
-            _model.ClearLog();
-        }
-
-        private void Save_Log_Clicked(object sender, RoutedEventArgs e)
+        private void SaveLog()
         {
             if (_model.Messages != null)
             {

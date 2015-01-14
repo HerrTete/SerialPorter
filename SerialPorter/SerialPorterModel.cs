@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO.Ports;
 using System.Text;
+using System.Windows.Controls;
 
 using SerialPorter.DTOs;
 
@@ -12,6 +13,7 @@ namespace SerialPorter
         private SerialPort _serialPort = null;
 
         public event Action<List<string>> MessagesChanged;
+        public event Action TitleChanged;
 
         public string TitleStatus { get; set; }
 
@@ -30,6 +32,7 @@ namespace SerialPorter
             _serialPort = new SerialPort(settings.Port, settings.Baudrate, settings.Parity, settings.Databit, settings.Stopbit);
 
             TitleStatus = PortName;
+            RaiseTitleChanged();
         }
 
         public void OpenConnection()
@@ -41,6 +44,7 @@ namespace SerialPorter
                     _serialPort.Open();
                     _serialPort.DataReceived += SerialPortDataReceived;
                     TitleStatus = PortName + " - opened";
+                    RaiseTitleChanged();
                 }
             }
         }
@@ -52,6 +56,7 @@ namespace SerialPorter
             {
                 _serialPort.Close();
                 TitleStatus = PortName + " - closed";
+                RaiseTitleChanged();
             }
         }
 
@@ -104,6 +109,14 @@ namespace SerialPorter
             if (MessagesChanged != null)
             {
                 MessagesChanged(Messages);
+            }
+        }
+
+        private void RaiseTitleChanged()
+        {
+            if (TitleChanged != null)
+            {
+                TitleChanged();
             }
         }
 
