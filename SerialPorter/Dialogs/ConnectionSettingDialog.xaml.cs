@@ -3,23 +3,24 @@ using System.Collections.Generic;
 using System.IO.Ports;
 using System.Windows;
 
+using SerialPorter.DTOs;
 using SerialPorter.ViewModel;
 
-namespace SerialPorter
+namespace SerialPorter.Dialogs
 {
     /// <summary>
     /// Interaction logic for ConnectionSettingWindow.xaml
     /// </summary>
-    public partial class ConnectionSettingWindow : Window
+    public partial class ConnectionSettingDialog : Window
     {
-        public ConnectionSettingWindow()
+        public ConnectionSettingDialog()
         {
             InitializeComponent();
         }
 
         public void LoadSettings(SerialPortSettings settings, IEnumerable<string> ports, IEnumerable<string> parities, IEnumerable<string> stopbits)
         {
-            var viewModel = new ConnectionSettingWindowViewModel(ports, parities, stopbits);
+            var viewModel = new ConnectionSettingDialogViewModel(ports, parities, stopbits);
             if (settings != null)
             {
                 viewModel.Port = settings.Port;
@@ -42,7 +43,7 @@ namespace SerialPorter
 
         public SerialPortSettings GetSettings()
         {
-            var viewModel = DataContext as ConnectionSettingWindowViewModel;
+            var viewModel = DataContext as ConnectionSettingDialogViewModel;
             if (viewModel == null)
             {
                 return null;

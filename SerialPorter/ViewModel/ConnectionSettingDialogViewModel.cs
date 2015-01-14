@@ -5,9 +5,9 @@ using SerialPorter.WpfTools;
 
 namespace SerialPorter.ViewModel
 {
-    public class ConnectionSettingWindowViewModel : BaseViewModel
+    public class ConnectionSettingDialogViewModel : BaseViewModel
     {
-        public ConnectionSettingWindowViewModel(IEnumerable<string> ports, IEnumerable<string> parities, IEnumerable<string> stopBits)
+        public ConnectionSettingDialogViewModel(IEnumerable<string> ports, IEnumerable<string> parities, IEnumerable<string> stopBits)
         {
             Ports = ports.ToList();
             BaudRates = new List<int> { 9600 };

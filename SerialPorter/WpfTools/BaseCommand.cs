@@ -58,6 +58,7 @@ namespace SerialPorter.WpfTools
             if (CanExecuteChanged !=null)
             {
                 CanExecuteChanged(this, new EventArgs());
+                CommandManager.InvalidateRequerySuggested();
             }
         }
 

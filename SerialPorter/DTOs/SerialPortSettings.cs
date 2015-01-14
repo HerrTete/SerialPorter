@@ -1,6 +1,6 @@
 ﻿using System.IO.Ports;
 
-namespace SerialPorter
+namespace SerialPorter.DTOs
 {
     public class SerialPortSettings
     {

@@ -9,6 +9,7 @@ using System.Windows.Threading;
 using Microsoft.Win32;
 
 using SerialPorter.Dialogs;
+using SerialPorter.DTOs;
 
 namespace SerialPorter
 {
@@ -106,10 +107,10 @@ namespace SerialPorter
             IEnumerable<string> parities,
             IEnumerable<string> stopbits)
         {
-            var connectionSettingsWindow = new ConnectionSettingWindow();
-            connectionSettingsWindow.LoadSettings(null, ports, parities, stopbits);
-            connectionSettingsWindow.ShowDialog();
-            var settings = connectionSettingsWindow.GetSettings();
+            var connectionSettingDialog = new ConnectionSettingDialog();
+            connectionSettingDialog.LoadSettings(null, ports, parities, stopbits);
+            connectionSettingDialog.ShowDialog();
+            var settings = connectionSettingDialog.GetSettings();
             return settings;
         }
 
