@@ -53,6 +53,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="UiController.cs" />
     <Compile Include="ViewModel\SerialPorterMainWindowViewModel.cs" />
     <Compile Include="ViewModel\TextInputDialogViewModel.cs" />
     <Compile Include="ViewModel\ConnectionSettingDialogViewModel.cs" />

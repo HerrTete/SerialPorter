@@ -13,29 +13,6 @@ namespace SerialPorter.Dialogs
         public TextInputDialog()
         {
             InitializeComponent();
-            DataContext = new TextInputDialogViewModel();
-            ViewModel.OkCommand = new BaseCommand(Close);
-            ViewModel.CancelCommand = new BaseCommand(
-                () =>
-                {
-                    ViewModel.InputText = null;
-                    Close();
-                });
-        }
-
-        private TextInputDialogViewModel ViewModel
-        {
-            get
-            {
-                return DataContext as TextInputDialogViewModel;
-            }
-        }
-
-        public string GetText(string questionText = null)
-        {
-            ViewModel.QuestionText = questionText;
-            ShowDialog();
-            return ViewModel.InputText;
         }
     }
 }
