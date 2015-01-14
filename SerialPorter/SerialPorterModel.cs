@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO.Ports;
+using System.Linq;
 using System.Text;
 using System.Windows.Controls;
 
@@ -29,10 +30,18 @@ namespace SerialPorter
 
         public void CreateConnection(SerialPortSettings settings)
         {
-            _serialPort = new SerialPort(settings.Port, settings.Baudrate, settings.Parity, settings.Databit, settings.Stopbit);
+            if (settings != null)
+            {
+                _serialPort = new SerialPort(
+                    settings.Port,
+                    settings.Baudrate,
+                    settings.Parity,
+                    settings.Databit,
+                    settings.Stopbit);
 
-            TitleStatus = PortName;
-            RaiseTitleChanged();
+                TitleStatus = PortName;
+                RaiseTitleChanged();
+            }
         }
 
         public void OpenConnection()
@@ -51,7 +60,7 @@ namespace SerialPorter
 
         public void CloseConnection()
         {
-            if (_serialPort != null && 
+            if (_serialPort != null &&
                 _serialPort.IsOpen)
             {
                 _serialPort.Close();
@@ -60,28 +69,10 @@ namespace SerialPorter
             }
         }
 
-        public void CreateConnection(Func<IEnumerable<string>, IEnumerable<string>, IEnumerable<string>, SerialPortSettings> getSettings)
-        {
-            var ports = SerialPort.GetPortNames();
-
-            if (ports.Length == 0)
-            {
-                ports = new[] { "NoPortFound" };
-            }
-
-            var parites = Enum.GetNames(typeof(Parity));
-            var stopBits = Enum.GetNames(typeof(StopBits));
-            var settings = getSettings(ports, parites, stopBits);
-            if(settings != null)
-            {
-                CreateConnection(settings);
-            }
-        }
-
         public void SendText(string text)
         {
-            if (text != null && 
-                _serialPort != null && 
+            if (text != null &&
+                _serialPort != null &&
                 _serialPort.IsOpen)
             {
                 var bytes = Encoding.ASCII.GetBytes(text);
@@ -128,5 +119,36 @@ namespace SerialPorter
                 RaiseMessagesChanged();
             }
         }
+
+        public SettingValueRange GetSettingValueRanges()
+        {
+            var ports = SerialPort.GetPortNames();
+
+            if (ports.Length == 0)
+            {
+                ports = new[] { "NoPortFound" };
+            }
+
+            var parites = Enum.GetNames(typeof(Parity));
+            var stopBits = Enum.GetNames(typeof(StopBits));
+
+            return new SettingValueRange
+            {
+                Ports = ports.ToList(),
+                BaudRates = new List<int> { 9600 },
+                Databits = new List<int> { 8, 7, 6, 5 },
+                Parities = parites.ToList(),
+                Stopbits = stopBits.ToList()
+            };
+        }
+    }
+
+    public class SettingValueRange
+    {
+        public List<string> Ports { get; set; }
+        public List<int> BaudRates { get; set; }
+        public List<string> Parities { get; set; }
+        public List<int> Databits { get; set; }
+        public List<string> Stopbits { get; set; }
     }
 }
