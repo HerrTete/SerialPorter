@@ -14,7 +14,7 @@
         </Grid.RowDefinitions>
         <TextBlock Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" Text="{Binding QuestionText}" Margin="5"/>
         <TextBox Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding InputText}" Margin="5"/>
-        <Button Grid.Column="0" Grid.Row="2" Content="Ok" Margin="5" Click="OkClick"/>
-        <Button Grid.Column="1" Grid.Row="2" Content="Cancel" Margin="5" Click="CancelClick"/>
+        <Button Grid.Column="0" Grid.Row="2" Content="Ok" Margin="5" Command="{Binding OkCommand}"/>
+        <Button Grid.Column="1" Grid.Row="2" Content="Cancel" Margin="5" Command="{Binding CancelCommand}"/>
     </Grid>
 </Window>

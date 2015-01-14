@@ -5,6 +5,7 @@ using System.Windows;
 
 using SerialPorter.DTOs;
 using SerialPorter.ViewModel;
+using SerialPorter.WpfTools;
 
 namespace SerialPorter.Dialogs
 {
@@ -38,6 +39,13 @@ namespace SerialPorter.Dialogs
                 viewModel.Stopbit = viewModel.Stopbits[1];
             }
 
+            viewModel.OkCommand = new BaseCommand(Close);
+            viewModel.CancelCommand = new BaseCommand(
+                () =>
+                {
+                    DataContext = null;
+                    Close();
+                });
             DataContext = viewModel;
         }
 
@@ -59,17 +67,6 @@ namespace SerialPorter.Dialogs
                     Stopbit = (StopBits)Enum.Parse(typeof(StopBits), viewModel.Stopbit)
                 };
             }
-        }
-
-        private void Ok_Click(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
-
-        private void Cancel_Click(object sender, RoutedEventArgs e)
-        {
-            DataContext = null;
-            Close();
         }
     }
 }

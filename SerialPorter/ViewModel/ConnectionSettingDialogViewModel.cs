@@ -16,6 +16,8 @@ namespace SerialPorter.ViewModel
             Stopbits = stopBits.ToList();
         }
 
+        public BaseCommand OkCommand { get; set; }
+        public BaseCommand CancelCommand { get; set; }
 
         public string Port { get; set; }
         public int BaudRate { get; set; }

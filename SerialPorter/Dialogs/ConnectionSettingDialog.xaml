@@ -27,7 +27,7 @@
         <ComboBox ItemsSource="{Binding Databits}" SelectedValue="{Binding Databit}" Grid.Column="1" Grid.Row="3" Margin="5"/>
         <ComboBox ItemsSource="{Binding Stopbits}" SelectedValue="{Binding Stopbit}" Grid.Column="1" Grid.Row="4" Margin="5"/>
         
-        <Button Content="Ok" Grid.Row ="5" Margin="5" Click="Ok_Click" Name="OkButton"/>
-        <Button Content="Cancel" Grid.Row ="5" Grid.Column="1" Margin="5" Click="Cancel_Click"/>
+        <Button Content="Ok" Grid.Row ="5" Margin="5" Command="{Binding OkCommand}"/>
+        <Button Content="Cancel" Grid.Row ="5" Grid.Column="1" Margin="5" Command="{Binding CancelCommand}"/>
     </Grid>
 </Window>

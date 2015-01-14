@@ -1,5 +1,7 @@
 ﻿using System.Windows;
 
+using SerialPorter.WpfTools;
+
 namespace SerialPorter.Dialogs
 {
     /// <summary>
@@ -7,31 +9,33 @@ namespace SerialPorter.Dialogs
     /// </summary>
     public partial class TextInputDialog : Window
     {
-        public string InputText { get; set; }
-        public string QuestionText { get; set; }
 
         public TextInputDialog()
         {
             InitializeComponent();
-            DataContext = this;
+            DataContext = new TextInputDialogViewModel();
+            ViewModel.OkCommand = new BaseCommand(Close);
+            ViewModel.CancelCommand = new BaseCommand(
+                () =>
+                {
+                    ViewModel.InputText = null;
+                    Close();
+                });
+        }
+
+        private TextInputDialogViewModel ViewModel
+        {
+            get
+            {
+                return DataContext as TextInputDialogViewModel;
+            }
         }
 
         public string GetText(string questionText = null)
         {
-            QuestionText = questionText;
+            ViewModel.QuestionText = questionText;
             ShowDialog();
-            return InputText;
-        }
-
-        private void OkClick(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
-
-        private void CancelClick(object sender, RoutedEventArgs e)
-        {
-            InputText = null;
-            Close();
+            return ViewModel.InputText;
         }
     }
 }
