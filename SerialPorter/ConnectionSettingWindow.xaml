@@ -1,0 +1,33 @@
+﻿<Window x:Class="SerialPorter.ConnectionSettingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="" WindowStyle="ToolWindow" Height="230" Width="300">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <TextBlock Text="Port:" Grid.Row ="0" Margin="5"/>
+        <TextBlock Text="BaudRate:" Grid.Row ="1" Margin="5"/>
+        <TextBlock Text="Parity:" Grid.Row ="2" Margin="5"/>
+        <TextBlock Text="Databits:" Grid.Row ="3" Margin="5"/>
+        <TextBlock Text="Stopbits:" Grid.Row ="4" Margin="5"/>
+
+        <ComboBox ItemsSource="{Binding Ports}" SelectedValue="{Binding Port}" Grid.Column="1" Grid.Row="0" Margin="5"/>
+        <ComboBox ItemsSource="{Binding BaudRates}" SelectedValue="{Binding BaudRate}" Grid.Column="1" Grid.Row="1" Margin="5"/>
+        <ComboBox ItemsSource="{Binding Parities}" SelectedValue="{Binding Parity}" Grid.Column="1" Grid.Row="2" Margin="5"/>
+        <ComboBox ItemsSource="{Binding Databits}" SelectedValue="{Binding Databit}" Grid.Column="1" Grid.Row="3" Margin="5"/>
+        <ComboBox ItemsSource="{Binding Stopbits}" SelectedValue="{Binding Stopbit}" Grid.Column="1" Grid.Row="4" Margin="5"/>
+        
+        <Button Content="Ok" Grid.Row ="5" Margin="5" Click="Ok_Click" Name="OkButton"/>
+        <Button Content="Cancel" Grid.Row ="5" Grid.Column="1" Margin="5" Click="Cancel_Click"/>
+    </Grid>
+</Window>
