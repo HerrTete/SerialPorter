@@ -10,7 +10,7 @@ using SerialPorter.WpfTools;
 
 namespace SerialPorter
 {
-    public class UiController
+    public class UiIntegration
     {
         private SerialPorterMainWindow serialPorterMainWindow = null;
         private TextInputDialog textInputDialog = null;

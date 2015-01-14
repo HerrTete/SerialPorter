@@ -9,23 +9,23 @@ namespace SerialPorter
             base.OnStartup(e);
 
             var model = new SerialPorterModel();
-            var ui = new UiController();
+            var uiIntegration = new UiIntegration();
 
-            ui.OnCreateClicked = model.CreateConnection;
-            ui.OnOpenClicked = model.OpenConnection;
-            ui.OnCloseClicked = model.CloseConnection;
-            ui.OnSaveLogClicked = model.SaveLog;
-            ui.OnClearLogClicked = model.ClearLog;
-            ui.SendText = model.SendText;
-            ui.GetSettingValueRanges = model.GetSettingValueRanges;
+            uiIntegration.OnCreateClicked = model.CreateConnection;
+            uiIntegration.OnOpenClicked = model.OpenConnection;
+            uiIntegration.OnCloseClicked = model.CloseConnection;
+            uiIntegration.OnSaveLogClicked = model.SaveLog;
+            uiIntegration.OnClearLogClicked = model.ClearLog;
+            uiIntegration.SendText = model.SendText;
+            uiIntegration.GetSettingValueRanges = model.GetSettingValueRanges;
 
-            ui.GetMessages = () => model.Messages;
-            ui.GetTitle = () => model.TitleStatus;
+            uiIntegration.GetMessages = () => model.Messages;
+            uiIntegration.GetTitle = () => model.TitleStatus;
 
-            model.MessagesChanged += ui.RefreshMessages;
-            model.TitleChanged += ui.RefreshTitle;
+            model.MessagesChanged += uiIntegration.RefreshMessages;
+            model.TitleChanged += uiIntegration.RefreshTitle;
 
-            ui.Start();
+            uiIntegration.Start();
         }
     }
 }

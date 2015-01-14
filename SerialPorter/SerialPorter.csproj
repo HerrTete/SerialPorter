@@ -57,7 +57,7 @@
     <Compile Include="DTOs\SettingValueRange.cs" />
     <Compile Include="Interactions\SendTextInteraction.cs" />
     <Compile Include="Interactions\SendFileInteraction.cs" />
-    <Compile Include="UiController.cs" />
+    <Compile Include="UiIntegration.cs" />
     <Compile Include="ViewModels\SerialPorterMainWindowViewModel.cs" />
     <Compile Include="ViewModels\TextInputDialogViewModel.cs" />
     <Compile Include="ViewModels\ConnectionSettingDialogViewModel.cs" />
