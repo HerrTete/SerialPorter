@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO.Ports;
 using System.Windows;
 
+using SerialPorter.ViewModel;
+
 namespace SerialPorter
 {
     /// <summary>

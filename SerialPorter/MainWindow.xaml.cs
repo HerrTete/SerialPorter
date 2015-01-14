@@ -8,6 +8,8 @@ using System.Windows.Threading;
 
 using Microsoft.Win32;
 
+using SerialPorter.Dialogs;
+
 namespace SerialPorter
 {
     /// <summary>

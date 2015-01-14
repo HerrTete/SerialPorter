@@ -1,13 +1,11 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
 
-using SerialPorter.Annotations;
+using SerialPorter.WpfTools;
 
-namespace SerialPorter
+namespace SerialPorter.ViewModel
 {
-    public class ConnectionSettingWindowViewModel : INotifyPropertyChanged
+    public class ConnectionSettingWindowViewModel : BaseViewModel
     {
         public ConnectionSettingWindowViewModel(IEnumerable<string> ports, IEnumerable<string> parities, IEnumerable<string> stopBits)
         {
@@ -30,17 +28,5 @@ namespace SerialPorter
         public List<string> Parities { get; set; }
         public List<int> Databits { get; set; }
         public List<string> Stopbits { get; set; }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        [NotifyPropertyChangedInvocator]
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(propertyName));
-            }
-        }
     }
 }

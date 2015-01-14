@@ -53,12 +53,14 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="ConnectionSettingWindowViewModel.cs" />
+    <Compile Include="ViewModel\ConnectionSettingWindowViewModel.cs" />
     <Compile Include="SerialPorterModel.cs" />
     <Compile Include="SerialPortSettings.cs" />
-    <Compile Include="TextInputDialog.xaml.cs">
+    <Compile Include="Dialogs\TextInputDialog.xaml.cs">
       <DependentUpon>TextInputDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="WpfTools\BaseCommand.cs" />
+    <Compile Include="WpfTools\BaseViewModel.cs" />
     <Page Include="ConnectionSettingWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -78,7 +80,7 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="TextInputDialog.xaml">
+    <Page Include="Dialogs\TextInputDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
