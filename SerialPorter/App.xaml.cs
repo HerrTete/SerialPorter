@@ -2,27 +2,25 @@
 
 namespace SerialPorter
 {
-    public partial class App : Application
+    public partial class App
     {
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
 
             var model = new SerialPorterModel();
-            var uiIntegration = new UiIntegration();
+            var uiIntegration = new UiIntegration
+            {
+                OnCreateClicked = model.CreateConnection,
+                OnOpenClicked = model.OpenConnection,
+                OnCloseClicked = model.CloseConnection,
+                OnSaveLogClicked = model.SaveLog,
+                SendBytes = model.SendBytes,
+                GetSettingValueRanges = model.GetSettingValueRanges,
+                GetTitle = () => model.TitleStatus
+            };
 
-            uiIntegration.OnCreateClicked = model.CreateConnection;
-            uiIntegration.OnOpenClicked = model.OpenConnection;
-            uiIntegration.OnCloseClicked = model.CloseConnection;
-            uiIntegration.OnSaveLogClicked = model.SaveLog;
-            uiIntegration.OnClearLogClicked = model.ClearLog;
-            uiIntegration.SendText = model.SendText;
-            uiIntegration.GetSettingValueRanges = model.GetSettingValueRanges;
-
-            uiIntegration.GetMessages = () => model.Messages;
-            uiIntegration.GetTitle = () => model.TitleStatus;
-
-            model.MessagesChanged += uiIntegration.RefreshMessages;
+            model.MessageReceived += uiIntegration.AppendMessage;
             model.TitleChanged += uiIntegration.RefreshTitle;
 
             uiIntegration.Start();

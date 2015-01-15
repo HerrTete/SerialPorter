@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 
 using SerialPorter.Dialogs;
 using SerialPorter.ViewModels;
@@ -18,10 +19,10 @@ namespace SerialPorter.Interactions
             _textInputDialogViewModel = textInputDialogViewModel;
         }
 
-        public void SendText(Action<string> sendText)
+        public void SendText(Action<byte[]> sendText, Encoding encoding)
         {
             var text = GetText();
-            sendText(text);
+            sendText(encoding.GetBytes(text));
         }
 
         private string GetText()

@@ -12,20 +12,35 @@ namespace SerialPorter
 {
     public class SerialPorterModel
     {
-        private SerialPort _serialPort = null;
+        private SerialPort _serialPort;
 
-        public event Action MessagesChanged;
         public event Action TitleChanged;
+        public Action<byte[]> MessageReceived { get; set; }
 
         public string TitleStatus { get; set; }
 
-        public List<string> Messages { get; set; }
+        public List<byte[]> Messages { get; set; }
 
         public string PortName
         {
             get
             {
                 return _serialPort.PortName;
+            }
+        }
+
+        public SerialPorterModel()
+        {
+            Messages = new List<byte[]>();
+        }
+
+        public void SendBytes(byte[] bytes)
+        {
+            if (bytes != null &&
+                _serialPort != null &&
+                _serialPort.IsOpen)
+            {
+                _serialPort.Write(bytes, 0, bytes.Length);
             }
         }
 
@@ -70,26 +85,6 @@ namespace SerialPorter
             }
         }
 
-        public void SendText(string text)
-        {
-            if (text != null &&
-                _serialPort != null &&
-                _serialPort.IsOpen)
-            {
-                var bytes = Encoding.ASCII.GetBytes(text);
-                _serialPort.Write(bytes, 0, bytes.Length);
-            }
-        }
-
-        public void ClearLog()
-        {
-            if (Messages != null)
-            {
-                Messages.Clear();
-                RaiseMessagesChanged();
-            }
-        }
-
         public SettingValueRange GetSettingValueRanges()
         {
             var ports = SerialPort.GetPortNames();
@@ -115,23 +110,19 @@ namespace SerialPorter
         private void SerialPortDataReceived(object sender, SerialDataReceivedEventArgs e)
         {
             var port = sender as SerialPort;
-            var data = port.ReadExisting();
-
-            var newMessageList = new List<string>();
-            if (Messages != null)
+            if (port != null)
             {
-                newMessageList.AddRange(Messages);
+                var buffer = new byte[port.BytesToRead];
+                port.Read(buffer, 0, buffer.Length);
+                RaiseMessagesReceived(buffer);
             }
-            newMessageList.AddRange(data.Split('\n'));
-            Messages = newMessageList;
-            RaiseMessagesChanged();
         }
 
-        private void RaiseMessagesChanged()
+        private void RaiseMessagesReceived(byte[] bytes)
         {
-            if (MessagesChanged != null)
+            if (MessageReceived != null)
             {
-                MessagesChanged();
+                MessageReceived(bytes);
             }
         }
 
@@ -143,27 +134,28 @@ namespace SerialPorter
             }
         }
 
-        public void SaveLog()
+        public void SaveLog(IEnumerable<string> messages,Encoding encoding)
         {
-            if (Messages != null)
-            {
-                var assemblyPath = Assembly.GetExecutingAssembly().Location;
-                var assemblyFolder = Directory.GetParent(assemblyPath).FullName;
-                var logFolder = Path.Combine(assemblyFolder, "Log");
-                if (!Directory.Exists(logFolder))
-                {
-                    Directory.CreateDirectory(logFolder);
-                }
-                var logFilename = string.Format("{0}_[{1}].log", DateTime.Now.ToString("s").Replace(':', '-'), PortName);
-                var logFilePath = Path.Combine(logFolder, logFilename);
+            var logFilePath = CreateLogFilePath();
 
-                File.WriteAllLines(logFilePath, Messages);
-            }
+            File.WriteAllLines(logFilePath, messages, encoding);
         }
 
-        public IEnumerable<string> GetMessages()
+        private string CreateLogFilePath()
         {
-            return Messages;
+            var assemblyPath = Assembly.GetExecutingAssembly().Location;
+            var assemblyFolder = Directory.GetParent(assemblyPath).FullName;
+            var logFolder = Path.Combine(assemblyFolder, "Log");
+            if (!Directory.Exists(logFolder))
+            {
+                Directory.CreateDirectory(logFolder);
+            }
+            var logFilename = string.Format(
+                "{0}_[{1}].log",
+                DateTime.Now.ToString("s").Replace(':', '-'),
+                PortName);
+            var logFilePath = Path.Combine(logFolder, logFilename);
+            return logFilePath;
         }
 
         public string GetTitle()

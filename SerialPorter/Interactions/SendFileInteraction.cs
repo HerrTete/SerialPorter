@@ -7,20 +7,20 @@ namespace SerialPorter.Interactions
 {
     internal class SendFileInteraction
     {
-        public void SendFile(Action<string> serialPorterModel)
+        public void SendFile(Action<byte[]> serialPorterModel)
         {
             var fileContent = GetFileContent();
             serialPorterModel(fileContent);
         }
 
-        private string GetFileContent()
+        private byte[] GetFileContent()
         {
             var fileDialog = new OpenFileDialog();
 
             var dialogResult = fileDialog.ShowDialog();
             if (dialogResult == true)
             {
-                return File.ReadAllText(fileDialog.FileName);
+                return File.ReadAllBytes(fileDialog.FileName);
             }
             else
             {

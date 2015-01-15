@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Windows.Threading;
 
 using SerialPorter.Dialogs;
@@ -25,20 +26,20 @@ namespace SerialPorter
         private CreateConnectionInteraction createConnection_Interaction = null;
         private SendTextInteraction sendText_Interaction = null;
         private SendFileInteraction sendFile_Interaction = null;
+
+        private readonly Encoding encoding = Encoding.ASCII;
         
-        public Action<string> SendText { get; set; }
+        public Action<byte[]> SendBytes { get; set; }
         public Action<SerialPortSettings> OnCreateClicked { get; set; }
         
         public Action OnCloseClicked { get; set; }
         public Action OnOpenClicked { get; set; }
-        public Action OnSaveLogClicked { get; set; }
-        public Action OnClearLogClicked { get; set; }
-
+        public Action<IEnumerable<string>, Encoding>  OnSaveLogClicked { get; set; }
+        
         public Func<SettingValueRange> GetSettingValueRanges { get; set; }
 
-        public Func<List<string>> GetMessages { get; set; }
         public Func<string> GetTitle { get; set; }
-
+        
         private void Run()
         {
             initialDispatcher = Dispatcher.CurrentDispatcher;
@@ -60,11 +61,11 @@ namespace SerialPorter
             serialPorterMainWindowViewModel.Title = "SerialPorter";
             serialPorterMainWindowViewModel.OpenConnectionCommand = new BaseCommand(OnOpenClicked);
             serialPorterMainWindowViewModel.CloseConnectionCommand = new BaseCommand(OnCloseClicked);
-            serialPorterMainWindowViewModel.ClearLogCommand = new BaseCommand(OnClearLogClicked);
-            serialPorterMainWindowViewModel.SaveLogCommand = new BaseCommand(OnSaveLogClicked);
+            serialPorterMainWindowViewModel.ClearLogCommand = new BaseCommand(serialPorterMainWindowViewModel.Messages.Clear);
+            serialPorterMainWindowViewModel.SaveLogCommand = new BaseCommand(()=> OnSaveLogClicked(serialPorterMainWindowViewModel.Messages, encoding));
             serialPorterMainWindowViewModel.CreateConnectionCommand = new BaseCommand(() => createConnection_Interaction.CreateConnection(OnCreateClicked));
-            serialPorterMainWindowViewModel.SendTextCommand = new BaseCommand(() => sendText_Interaction.SendText(SendText));
-            serialPorterMainWindowViewModel.SendFileCommand = new BaseCommand(()=> sendFile_Interaction.SendFile(SendText));
+            serialPorterMainWindowViewModel.SendTextCommand = new BaseCommand(() => sendText_Interaction.SendText(SendBytes, encoding));
+            serialPorterMainWindowViewModel.SendFileCommand = new BaseCommand(()=> sendFile_Interaction.SendFile(SendBytes));
 
             textInputDialogViewModel.OkCommand = new BaseCommand(textInputDialog.Hide);
             textInputDialogViewModel.CancelCommand = new BaseCommand(
@@ -112,15 +113,15 @@ namespace SerialPorter
             Run();
         }
 
-        public void RefreshMessages()
+        public void AppendMessage(byte[] bytes)
         {
             if (!initialDispatcher.CheckAccess())
             {
-                initialDispatcher.Invoke(RefreshMessages);
+                initialDispatcher.Invoke(()=> AppendMessage(bytes));
             }
             else
             {
-                serialPorterMainWindowViewModel.Messages = new List<string>(GetMessages());
+                serialPorterMainWindowViewModel.Messages.Add(encoding.GetString(bytes).Trim());
                 serialPorterMainWindowViewModel.OnPropertyChanged("Messages");
             }
         }
