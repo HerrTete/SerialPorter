@@ -22,7 +22,10 @@ namespace SerialPorter.Interactions
         public void SendText(Action<byte[]> sendText, Encoding encoding)
         {
             var text = GetText();
-            sendText(encoding.GetBytes(text));
+            if (text != null)
+            {
+                sendText(encoding.GetBytes(text));
+            }
         }
 
         private string GetText()
@@ -33,6 +36,7 @@ namespace SerialPorter.Interactions
             _textInputDialogViewModel.OnPropertyChanged("QuestionText");
             _textInputDialogViewModel.OnPropertyChanged("InputText");
 
+            _textInputDialog.Owner = App.Current.MainWindow;
             _textInputDialog.ShowDialog();
 
             return _textInputDialogViewModel.InputText;

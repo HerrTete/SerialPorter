@@ -40,6 +40,7 @@ namespace SerialPorter.Interactions
             _connectionSettingDialogViewModel.OnPropertyChanged("Databit");
             _connectionSettingDialogViewModel.OnPropertyChanged("Stopbit");
 
+            _connectionSettingDialog.Owner = App.Current.MainWindow;
             _connectionSettingDialog.ShowDialog();
 
             if (_connectionSettingDialogViewModel.Port == null)
