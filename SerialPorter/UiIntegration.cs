@@ -118,7 +118,7 @@ namespace SerialPorter
         {
             if (!initialDispatcher.CheckAccess())
             {
-                initialDispatcher.Invoke(()=> AppendMessage(bytes));
+                initialDispatcher.Invoke(new Action(() => AppendMessage(bytes)));
             }
             else
             {
