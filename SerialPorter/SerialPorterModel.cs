@@ -15,11 +15,9 @@ namespace SerialPorter
         private SerialPort _serialPort;
 
         public event Action TitleChanged;
-        public Action<byte[]> MessageReceived { get; set; }
+        public event Action<byte[]> MessageReceived;
 
         public string TitleStatus { get; set; }
-
-        public List<byte[]> Messages { get; set; }
 
         public string PortName
         {
@@ -27,11 +25,6 @@ namespace SerialPorter
             {
                 return _serialPort.PortName;
             }
-        }
-
-        public SerialPorterModel()
-        {
-            Messages = new List<byte[]>();
         }
 
         public void SendBytes(byte[] bytes)
@@ -100,7 +93,7 @@ namespace SerialPorter
             return new SettingValueRange
             {
                 Ports = ports.ToList(),
-                BaudRates = new List<int> { 9600 },
+                BaudRates = new List<int> { 9600, 2400 },
                 Databits = new List<int> { 8, 7, 6, 5 },
                 Parities = parites.ToList(),
                 Stopbits = stopBits.ToList()
@@ -138,7 +131,9 @@ namespace SerialPorter
         {
             var logFilePath = CreateLogFilePath();
 
-            File.WriteAllLines(logFilePath, messages, encoding);
+            var txt = messages.Aggregate(string.Empty, (current, message) => current + message);
+
+            File.WriteAllText(logFilePath, txt, encoding);
         }
 
         private string CreateLogFilePath()
