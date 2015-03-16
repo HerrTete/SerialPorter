@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Ports;
 using System.Linq;
@@ -13,7 +14,7 @@ namespace SerialPorter
     public class SerialPorterModel
     {
         private SerialPort _serialPort;
-
+        private List<byte> _receiveBuffer = new List<byte>(); 
         public event Action TitleChanged;
         public event Action<byte[]> MessageReceived;
 
@@ -105,9 +106,22 @@ namespace SerialPorter
             var port = sender as SerialPort;
             if (port != null)
             {
-                var buffer = new byte[port.BytesToRead];
-                port.Read(buffer, 0, buffer.Length);
-                RaiseMessagesReceived(buffer);
+                var currentReceiveBuffer = new List<byte>();
+                while (port.BytesToRead > 0)
+                {
+                    var b = port.ReadByte();
+                    currentReceiveBuffer.Add((byte)b);
+                }
+                _receiveBuffer.AddRange(currentReceiveBuffer);
+                try
+                {
+                    File.WriteAllBytes("ReceiveBuffer", _receiveBuffer.ToArray());
+                }
+                catch (Exception exception)
+                {
+                    Trace.WriteLine(exception);
+                }
+                RaiseMessagesReceived(currentReceiveBuffer.ToArray());
             }
         }
 
